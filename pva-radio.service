@@ -1,0 +1,11 @@
+[Unit]
+Description=PVA radio
+
+[Service]
+User=pi
+WorkingDirectory=/home/pi/radio
+ExecStart=java -jar pva-radio.jar
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
