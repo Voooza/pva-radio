@@ -12,6 +12,8 @@
             [ring.adapter.jetty :as ring-jetty])
   (:gen-class))
 
+(def user-agent "pva-radio/0.1")
+
 (def db
   {:classname   "org.sqlite.JDBC"
    :subprotocol "sqlite"
@@ -47,7 +49,7 @@
   [suffix]
   (let [host (get-hostname)
         stations (->> (client/get (str "https://" host "/json/stations/" suffix "?order=clickcount&reverse=true&limit=20")
-                                  {:headers {"User-Agent" "pva-radio/0.1"}})
+                                  {:headers {"User-Agent" user-agent}})
                       :body
                       json/read-str
                       (take 20)
@@ -98,11 +100,11 @@ set name=excluded.name,
 (defn play
   [uuid]
   (kill)
-  (let [url   (-> (client/get (str "https://" (get-hostname) "/json/url/" uuid)
-                              {:headers {"User-Agent" "pva-radio/0.1"}})
-                  :body
-                  json/read-str
-                  (get "url"))]
+  (let [url (-> (client/get (str "https://" (get-hostname) "/json/url/" uuid)
+                            {:headers {"User-Agent" user-agent}})
+                :body
+                json/read-str
+                (get "url"))]
     (execute! db ["insert into history(time, uuid) values (?,?);" (now) uuid])
     (if (on-windows?)
       (.start (Thread. (fn [] (dosh (str "vlc --intf dummy " url)))))
